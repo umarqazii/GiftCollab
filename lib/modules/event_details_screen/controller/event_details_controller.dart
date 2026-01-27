@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:gift_collab/routes/app_routes.dart';
 import '../../../data/models/event_model.dart';
 import '../../../data/models/gift_model.dart';
 import '../../../data/models/user_model.dart';
@@ -9,13 +10,12 @@ import '../../add_gift/screen/add_gift_screen.dart';
 import '../../gift_registry/repository/gift_repository.dart';
 import '../../invited_events/repository/invited_events_repository.dart';
 
-// Helper class to unify Joined Users vs Invited Emails
 class Participant {
   final String name;
   final String email;
   final String photoUrl;
-  final String status; // 'Joined' or 'Invited'
-  final bool isUser;   // True if it's a real account, False if just an email invite
+  final String status;
+  final bool isUser;
 
   Participant({
     required this.name,
@@ -57,8 +57,7 @@ class EventDetailsController extends GetxController {
     
     currentUid.value = FirebaseAuth.instance.currentUser?.uid ?? "";
     isAdmin.value = event.adminIds.contains(currentUid.value);
-    
-    // Load the people list
+
     fetchParticipants();
 
     _checkUserStatus();
@@ -73,7 +72,7 @@ class EventDetailsController extends GetxController {
 
   void onViewAllGiftsPressed() {
     // We will create this route next
-    Get.toNamed('/gift-registry', arguments: event);
+    Get.toNamed(Routes().getGiftRegistryScreen(), arguments: event);
   }
 
   void _checkUserStatus() {
@@ -126,7 +125,6 @@ class EventDetailsController extends GetxController {
   void onAddGiftPressed() {
     Get.to(() => AddGiftScreen(eventId: event.id));
   }
-// ... existing variables ...
 
   // 1. The Dialog Logic
   void onAddPeoplePressed() {
@@ -190,6 +188,10 @@ class EventDetailsController extends GetxController {
           Get.snackbar("Notice", "User has already joined this event!");
           return;
         }
+        if(event.adminIds.contains(uid)){
+          Get.snackbar("Notice", "You can't send an invite to yourself!");
+          return;
+        }
       }
 
       // 3. If we passed both checks, it's safe to invite!
@@ -228,14 +230,13 @@ class EventDetailsController extends GetxController {
           final user = UserModel.fromJson(userQuery.docs.first.data() as Map<String, dynamic>);
           
           tempList.add(Participant(
-            name: user.displayName, // Use actual name
+            name: user.displayName,
             email: email,
-            photoUrl: user.photoUrl, // Use actual photo
+            photoUrl: user.photoUrl,
             status: "Invited",
             isUser: true,
           ));
         } else {
-          // NOT FOUND! Fallback to "Guest"
           tempList.add(Participant(
             name: "Guest",
             email: email,
@@ -252,10 +253,7 @@ class EventDetailsController extends GetxController {
           final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
           if (doc.exists) {
             final user = UserModel.fromJson(doc.data()!);
-            
-            // Avoid duplicates: If a user is both "Invited" (via email) and "Joined" (via UID),
-            // we prefer the "Joined" status.
-            // We remove any existing entry with the same email from the list before adding the Joined version.
+
             tempList.removeWhere((p) => p.email == user.email);
 
             tempList.add(Participant(

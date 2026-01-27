@@ -8,9 +8,9 @@ import 'package:uuid/uuid.dart';
 import '../../../data/models/gift_model.dart';
 
 class AddGiftController extends GetxController {
-  final String eventId; // Passed in arguments
+  final String eventId;
 
-  AddGiftController(this.eventId); // Constructor injection
+  AddGiftController(this.eventId);
 
   final nameController = TextEditingController();
   final priceController = TextEditingController();
@@ -19,8 +19,7 @@ class AddGiftController extends GetxController {
   var selectedImage = Rxn<File>();
   var isLoading = false.obs;
 
-  // Cloudinary Setup (Reuse your keys)
-  final cloudinary = CloudinaryPublic('YOUR_CLOUD_NAME', 'YOUR_UPLOAD_PRESET', cache: false);
+  final cloudinary = CloudinaryPublic('ddbllhkcb', 'giftcollab_preset', cache: false);
 
   // Pick Image
   Future<void> pickImage() async {

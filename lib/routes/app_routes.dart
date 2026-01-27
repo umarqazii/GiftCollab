@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:gift_collab/modules/gift_registry/screen/gift_registry_screen.dart';
 import 'package:gift_collab/modules/home/binding/home_binding.dart';
 import 'package:gift_collab/modules/home/screen/home_screen.dart';
 import 'package:gift_collab/modules/login/binding/login_binding.dart';
@@ -18,6 +19,7 @@ class Routes {
   //Define Routes Below
   String getLoginScreen() => LoginScreen.id;
   String getHomeScreen() => HomeScreen.id;
+  String getGiftRegistryScreen() => GiftRegistryScreen.id;
   
   List<GetPage> routeMap = [
     GetPage(
@@ -32,7 +34,10 @@ class Routes {
       page: () => const HomeScreen(),
       transition: Transition.rightToLeft,
     ),
-    
-    
+    GetPage(
+      name: GiftRegistryScreen.id,
+      page: () => GiftRegistryScreen(),
+      transition: Transition.rightToLeft,
+    ),
   ];
 }
