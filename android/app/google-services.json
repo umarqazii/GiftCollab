@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1092733222219",
+    "project_id": "giftcollab-app",
+    "storage_bucket": "giftcollab-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1092733222219:android:79fdaf90f89a6ca1ea3cce",
+        "android_client_info": {
+          "package_name": "com.umerqazi.gift_collab"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3dbE-pNkD3RHORFSajG9JkLOHGyDK4sY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
