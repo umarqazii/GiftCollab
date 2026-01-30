@@ -1,1 +1,36 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"giftcollab-app","appId":"1:1092733222219:android:79fdaf90f89a6ca1ea3cce","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"giftcollab-app","configurations":{"android":"1:1092733222219:android:79fdaf90f89a6ca1ea3cce","ios":"1:1092733222219:ios:744de2ddf4ab7002ea3cce"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "giftcollab-app",
+          "appId": "1:1092733222219:android:79fdaf90f89a6ca1ea3cce",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "giftcollab-app",
+          "configurations": {
+            "android": "1:1092733222219:android:79fdaf90f89a6ca1ea3cce",
+            "ios": "1:1092733222219:ios:744de2ddf4ab7002ea3cce"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "disallowLegacyRuntimeConfig": true,
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ]
+}

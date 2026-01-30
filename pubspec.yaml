@@ -49,6 +49,7 @@ dependencies:
   uuid: ^4.5.2
   cached_network_image: ^3.4.1
   cloudinary_public: ^0.23.1
+  flutter_stripe: ^12.2.0
 
 dev_dependencies:
   flutter_test:

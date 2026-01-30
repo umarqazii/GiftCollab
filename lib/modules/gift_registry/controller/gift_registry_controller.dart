@@ -10,6 +10,9 @@ import '../../../data/models/gift_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../add_gift/screen/add_gift_screen.dart';
 import '../repository/gift_repository.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_stripe/flutter_stripe.dart';
+import 'dart:convert';
 
 class GiftRegistryController extends GetxController {
   final GiftRepository _repository = GiftRepository();
@@ -124,71 +127,126 @@ class GiftRegistryController extends GetxController {
   Future<void> _processContribution(GiftModel gift, double amount, String message) async {
     try {
       isLoading.value = true;
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) return;
 
-      // 1. Get current user details (for the snapshot)
-      // We assume you might have a UserService or just fetch it.
-      // For speed, we'll fetch from Firestore or use Auth profile if available.
-      String userName = currentUser.displayName ?? "Anonymous";
-      String userPhoto = currentUser.photoURL ?? "";
+      // --- STEP 1: Talk to your Node Server ---
+      // Convert dollars to cents (Stripe expects integers)
+      final int amountInCents = (amount * 100).toInt();
 
-      // 2. Prepare Data
-      final contributionId = const Uuid().v4();
-      final newContribution = ContributionModel(
-        id: contributionId,
-        giftId: gift.id,
-        userId: currentUser.uid,
-        userName: userName,
-        userPhotoUrl: userPhoto,
-        amount: amount,
-        timestamp: DateTime.now(),
-        message: message.isEmpty ? null : message,
+      // REPLACE this URL with your actual server URL:
+      // - Android Emulator: 'http://10.0.2.2:3000/create-payment-intent'
+      // - iOS Simulator:    'http://localhost:3000/create-payment-intent'
+      // - Real Device:      'http://<YOUR_PC_IP>:3000/create-payment-intent'
+      // - Render/Live:      'https://giftcollab-api.onrender.com/create-payment-intent'
+      final url = Uri.parse('https://giftcollab-server.onrender.com/create-payment-intent');
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'amount': amountInCents,
+          'currency': 'usd', // Change currency if needed
+        }),
       );
 
-      // 3. Run Transaction
-      await FirebaseFirestore.instance.runTransaction((transaction) async {
-        // A. Read the latest gift data (to prevent race conditions)
-        DocumentReference giftRef = FirebaseFirestore.instance
-            .collection('events')
-            .doc(event.id)
-            .collection('gifts')
-            .doc(gift.id);
+      if (response.statusCode != 200) {
+        throw Exception("Server connection failed: ${response.body}");
+      }
 
-        DocumentSnapshot giftSnapshot = await transaction.get(giftRef);
+      final jsonResponse = jsonDecode(response.body);
 
-        if (!giftSnapshot.exists) {
-          throw Exception("Gift does not exist!");
-        }
+      // This is the "secret handshake" key from Stripe
+      final clientSecret = jsonResponse['clientSecret'];
 
-        final data = giftSnapshot.data() as Map<String, dynamic>;
+      // --- STEP 2: Initialize the Payment Sheet ---
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: clientSecret,
+          merchantDisplayName: 'GiftCollab', // Shown on the sheet
+          style: ThemeMode.light,
+          // billingDetails: const BillingDetails(name: 'Your User Name'), // Optional pre-fill
+        ),
+      );
 
-        // Use (value as num?)?.toDouble() to handle both Int and Double safely
-        double currentCollected = (data['amountCollected'] as num?)?.toDouble() ?? 0.0;
-        double price = (data['price'] as num?)?.toDouble() ?? 0.0;
-        // ---------------------------
+      // --- STEP 3: Show the Sheet to the User ---
+      // This line pauses execution until the user finishes paying or cancels
+      await Stripe.instance.presentPaymentSheet();
 
-        double newCollected = currentCollected + amount;
-        bool isFullyFunded = newCollected >= price;
+      // ==================================================
+      // IF WE REACH HERE, THE PAYMENT WAS SUCCESSFUL!
+      // ==================================================
 
-        // B. Write the Contribution
-        DocumentReference contributionRef = giftRef.collection('contributions').doc(contributionId);
-        transaction.set(contributionRef, newContribution.toJson());
+      // --- STEP 4: Record the Contribution in Firestore ---
+      // We perform the database update NOW, because we know the money is safe.
+      await _recordContributionInFirestore(gift, amount, message);
 
-        // C. Update the Gift Totals
-        transaction.update(giftRef, {
-          'amountCollected': newCollected,
-          'isFullyFunded': isFullyFunded,
-        });
-      });
+      Get.snackbar("Success", "Payment confirmed! Thank you for contributing.");
 
-      Get.snackbar("Success", "Thank you for your contribution of \$$amount!");
-
+    } on StripeException catch (e) {
+      if (e.error.code == FailureCode.Canceled) {
+        // User closed the sheet without paying - silent return or soft message
+        Get.snackbar("Cancelled", "Payment flow cancelled");
+      } else {
+        Get.snackbar("Payment Error", e.error.localizedMessage ?? "Unknown Stripe error");
+      }
     } catch (e) {
+      // General error (Network, Server, or Code)
+      print("System Error: $e");
       Get.snackbar("Error", "Transaction failed: $e");
     } finally {
       isLoading.value = false;
     }
+  }
+
+  // Helper Function: The Database Logic (Separated for cleanliness)
+  Future<void> _recordContributionInFirestore(GiftModel gift, double amount, String message) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    // 1. Prepare Data
+    String userName = currentUser.displayName ?? "Anonymous";
+    String userPhoto = currentUser.photoURL ?? "";
+    final contributionId = const Uuid().v4();
+
+    final newContribution = ContributionModel(
+      id: contributionId,
+      giftId: gift.id,
+      userId: currentUser.uid,
+      userName: userName,
+      userPhotoUrl: userPhoto,
+      amount: amount,
+      timestamp: DateTime.now(),
+      message: message.isEmpty ? null : message,
+    );
+
+    // 2. Run Transaction
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+      DocumentReference giftRef = FirebaseFirestore.instance
+          .collection('events')
+          .doc(event.id)
+          .collection('gifts')
+          .doc(gift.id);
+
+      DocumentSnapshot giftSnapshot = await transaction.get(giftRef);
+
+      if (!giftSnapshot.exists) throw Exception("Gift not found");
+
+      final data = giftSnapshot.data() as Map<String, dynamic>;
+      double currentCollected = (data['amountCollected'] as num?)?.toDouble() ?? 0.0;
+      double price = (data['price'] as num?)?.toDouble() ?? 0.0;
+
+      double newCollected = currentCollected + amount;
+      bool isFullyFunded = newCollected >= price;
+
+      // Write Contribution
+      DocumentReference contributionRef = giftRef.collection('contributions').doc(contributionId);
+      transaction.set(contributionRef, newContribution.toJson());
+
+      // Update Gift Totals
+      transaction.update(giftRef, {
+        'amountCollected': newCollected,
+        'isFullyFunded': isFullyFunded,
+      });
+    });
   }
 
   void onViewContributorsPressed(GiftModel gift) {
