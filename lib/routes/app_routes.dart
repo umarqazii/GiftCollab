@@ -5,6 +5,10 @@ import 'package:gift_collab/modules/home/binding/home_binding.dart';
 import 'package:gift_collab/modules/home/screen/home_screen.dart';
 import 'package:gift_collab/modules/login/binding/login_binding.dart';
 import 'package:gift_collab/modules/login/screen/login_screen.dart';
+import 'package:gift_collab/modules/role_selection/binding/role_selection_binding.dart';
+import 'package:gift_collab/modules/role_selection/screen/role_selection_screen.dart';
+import 'package:gift_collab/modules/splash/binding/splash_binding.dart';
+import 'package:gift_collab/modules/splash/screen/splash_screen.dart';
 
 
 class Routes {
@@ -20,8 +24,16 @@ class Routes {
   String getLoginScreen() => LoginScreen.id;
   String getHomeScreen() => HomeScreen.id;
   String getGiftRegistryScreen() => GiftRegistryScreen.id;
-  
+  String getRoleSelectionScreen() => RoleSelectionScreen.id;
+  String getSplashScreen() => SplashScreen.id;
+
   List<GetPage> routeMap = [
+    GetPage(
+      name: SplashScreen.id,
+      binding: SplashBinding(),
+      page: () => const SplashScreen(),
+      transition: Transition.fade,
+    ),
     GetPage(
       name: LoginScreen.id,
       binding: LoginBinding(),
@@ -37,6 +49,12 @@ class Routes {
     GetPage(
       name: GiftRegistryScreen.id,
       page: () => GiftRegistryScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: RoleSelectionScreen.id,
+      binding: RoleSelectionBinding(),
+      page: () => RoleSelectionScreen(),
       transition: Transition.rightToLeft,
     ),
   ];

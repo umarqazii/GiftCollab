@@ -16,4 +16,14 @@ class StorageService extends GetxService {
   String? getToken() {
     return _prefs.getString('auth_token');
   }
+
+  static const String _keyUserRole = 'user_role';
+
+  Future<void> saveRole(String role) async {
+    await _prefs.setString(_keyUserRole, role);
+  }
+
+  String? getRole() {
+    return _prefs.getString(_keyUserRole);
+  }
 }

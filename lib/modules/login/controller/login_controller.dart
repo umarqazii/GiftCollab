@@ -38,9 +38,8 @@ class LoginController extends GetxController {
 
       if (user != null) {
         await _checkAndCreateUser(user);
-        
         Get.snackbar("Success", "Welcome ${user.displayName}");
-        //  Get.offAllNamed(Routes().getHomeScreen()); 
+        Get.offAllNamed(Routes().getRoleSelectionScreen());
       }
     } catch (e) {
       Get.snackbar("Login Failed", e.toString());
