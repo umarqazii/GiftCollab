@@ -61,7 +61,7 @@ lib/
 │   ├── splash/           # Splash screen & routing by auth status
 │   ├── login/            # Google Sign-In
 │   ├── role_selection/   # Event vs Seller role choice
-│   ├── home/             # Bottom nav: My Events, Invitations, Joined
+│   ├── event_home/        # Event home: Bottom nav My Events, Invitations, Joined
 │   ├── my_events/        # Events created by user, FAB → Create Event
 │   ├── invited_events/   # Events user is invited to
 │   ├── joined_events/    # Events user has joined
@@ -91,7 +91,7 @@ lib/
 
 1. **Clone and install**
    ```bash
-   git clone <repo-url>
+   git clone https://github.com/umarqazii/GiftCollab.git
    cd GiftCollab
    flutter pub get
    ```

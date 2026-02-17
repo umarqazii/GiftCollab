@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:gift_collab/modules/my_events/controller/my_events_controller.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-class HomeController extends GetxController {
+class EventHomeController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final RxInt selectedTabIndex = 0.obs;
@@ -20,12 +20,10 @@ class HomeController extends GetxController {
         await _googleSignIn.signOut();
       }
 
-      // 2. Firebase Signout
       await _auth.signOut();
 
-      Get.delete<MyEventsController>(force: true); 
-      Get.delete<HomeController>(force: true); 
-      
+      Get.delete<MyEventsController>(force: true);
+      Get.delete<EventHomeController>(force: true);
     } catch (e) {
       Get.snackbar("Error", "Logout failed: $e");
     }

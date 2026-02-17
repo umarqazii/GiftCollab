@@ -16,13 +16,7 @@ class MyEventsController extends GetxController {
 
   void setupEventsListener() {
     isLoading.value = true;
-    
-    // bindStream automatically updates 'myEvents' whenever Firestore changes
     myEvents.bindStream(_repository.getMyEventsStream());
-    
-    // Determine when to stop loading. 
-    // Since streams are continuous, we can create a worker that 
-    // turns off loading as soon as the first batch of data arrives.
     ever(myEvents, (_) {
       isLoading.value = false;
     });

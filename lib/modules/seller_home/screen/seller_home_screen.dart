@@ -1,26 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gift_collab/core/constants/app_colors.dart';
-import 'package:gift_collab/modules/invited_events/screen/invited_events_screen.dart';
-import 'package:gift_collab/modules/joined_events/screen/joined_events_screen.dart';
-import 'package:gift_collab/modules/my_events/screen/my_events_screen.dart';
-import '../controller/home_controller.dart';
+import 'package:gift_collab/modules/seller_dashboard/screen/seller_dashboard_screen.dart';
+import 'package:gift_collab/routes/app_routes.dart';
+import 'package:gift_collab/modules/seller_orders/screen/seller_order_screen.dart';
+import 'package:gift_collab/modules/seller_products/screen/seller_product_screen.dart';
+import 'package:gift_collab/modules/seller_profile/screen/seller_profile_screen.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
-class HomeScreen extends GetView<HomeController> {
-  static const String id = '/home';
-  const HomeScreen({super.key});
+import '../controller/seller_home_controller.dart';
+
+class SellerHomeScreen extends GetView<SellerHomeController> {
+  static const String id = '/seller_home';
+  const SellerHomeScreen({super.key});
 
   static final List<Widget> _widgetOptions = <Widget>[
-    MyEventsScreen(),
-    InvitedEventsScreen(),
-    JoinedEventsScreen(),
+    SellerProductScreen(),
+    SellerDashboardScreen(),
+    SellerOrderScreenScreen(),
+    SellerProfileScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Get.offAllNamed(Routes().getRoleSelectionScreen()),
+          tooltip: 'Back to role selection',
+        ),
         title: const Text('GiftCollab'),
         centerTitle: true,
         backgroundColor: Colors.deepPurple,
@@ -37,8 +46,8 @@ class HomeScreen extends GetView<HomeController> {
                 cancelTextColor: AppColors.primaryPurple,
                 confirmTextColor: Colors.white,
                 onConfirm: () {
-                  Get.back(); 
-                  controller.logout(); 
+                  Get.back();
+                  controller.logout();
                 },
               );
             },
@@ -64,32 +73,33 @@ class HomeScreen extends GetView<HomeController> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
             child: GNav(
-              rippleColor: AppColors.primaryPurple.withValues(alpha: 0.3), 
+              rippleColor: AppColors.primaryPurple.withValues(alpha: 0.3),
               hoverColor: AppColors.grey,
-              gap: 8, 
+              gap: 8,
               activeColor: AppColors.primaryPurple,
-              iconSize: 24, 
+              iconSize: 24,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               duration: const Duration(milliseconds: 400),
-              tabBackgroundColor: AppColors.primaryPurple.withValues(alpha: 0.1), 
+              tabBackgroundColor: AppColors.primaryPurple.withValues(alpha: 0.1),
               color: AppColors.grey,
-              
               tabs: const [
                 GButton(
-                  icon: Icons.event,
-                  text: 'My Events',
+                  icon: Icons.inventory,
+                  text: 'My Products',
                 ),
                 GButton(
-                  icon: Icons.mail_outline,
-                  text: 'Invitations',
+                  icon: Icons.insert_chart,
+                  text: 'Dashboard',
                 ),
                 GButton(
-                  icon: Icons.event_available,
-                  text: 'Joined',
+                  icon: Icons.card_giftcard,
+                  text: 'Orders',
                 ),
-                
+                GButton(
+                  icon: Icons.person,
+                  text: 'Profile',
+                ),
               ],
-              
               selectedIndex: controller.selectedTabIndex.value,
               onTabChange: (index) {
                 controller.changeTab(index);
