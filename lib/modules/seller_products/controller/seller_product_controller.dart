@@ -91,7 +91,7 @@ class SellerProductController extends GetxController {
       // B. Upload Image first
       String imageUrl = await _uploadToCloudinary(selectedImage.value!);
 
-      // C. Create the Product Model (with shop + product category)
+      // C. Create the Product Model (with shop, category, and human-readable product code)
       final newProduct = ProductModel(
         id: const Uuid().v4(),
         sellerId: FirebaseAuth.instance.currentUser!.uid,
@@ -105,6 +105,7 @@ class SellerProductController extends GetxController {
         productCategory: selectedProductCategory.value ?? 'Other',
         shopName: user.shopName,
         shopCategory: user.shopCategory,
+        productCode: _generateProductCode(),
       );
 
       // D. Save to Firestore via Repository
@@ -120,6 +121,13 @@ class SellerProductController extends GetxController {
     } finally {
       isUploading.value = false;
     }
+  }
+
+  /// Generates a human-readable unique code for search/copy (e.g. "GC-A1B2C3D4").
+  static String _generateProductCode() {
+    const uuid = Uuid();
+    final hex = uuid.v4().replaceAll('-', '').substring(0, 8).toUpperCase();
+    return 'GC-$hex';
   }
 
   void _clearForm() {

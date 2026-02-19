@@ -16,6 +16,8 @@ class ProductModel {
   String shopName;
   /// Shop category at time of listing (denormalized from user for search/filter).
   String shopCategory;
+  /// Human-readable unique code for search/copy (e.g. "GC-A1B2C3D4"). Used by event managers to add product to gift registry.
+  String productCode;
 
   ProductModel({
     required this.id,
@@ -30,6 +32,7 @@ class ProductModel {
     this.productCategory = 'Other',
     this.shopName = '',
     this.shopCategory = '',
+    this.productCode = '',
   });
 
   Map<String, dynamic> toJson() => {
@@ -45,6 +48,7 @@ class ProductModel {
         'productCategory': productCategory,
         'shopName': shopName,
         'shopCategory': shopCategory,
+        'productCode': productCode,
       };
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -61,6 +65,7 @@ class ProductModel {
       productCategory: json['productCategory'] ?? 'Other',
       shopName: json['shopName'] ?? '',
       shopCategory: json['shopCategory'] ?? '',
+      productCode: json['productCode'] ?? '',
     );
   }
 }

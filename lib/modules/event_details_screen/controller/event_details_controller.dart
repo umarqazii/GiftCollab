@@ -80,10 +80,12 @@ class EventDetailsController extends GetxController {
     if (user != null) {
       currentUid.value = user.uid;
 
-      // Check Roles
+      // Check Roles (invited: case-insensitive to match stored/query normalization)
       isAdmin.value = event.adminIds.contains(user.uid);
       isJoined.value = event.joinedUserIds.contains(user.uid);
-      isInvited.value = event.invitedEmails.contains(user.email);
+      final emailLower = (user.email ?? '').trim().toLowerCase();
+      isInvited.value = emailLower.isNotEmpty &&
+          event.invitedEmails.any((e) => e.trim().toLowerCase() == emailLower);
     }
   }
 
@@ -97,7 +99,8 @@ class EventDetailsController extends GetxController {
       isJoined.value = true;
 
       // Refresh the "People" list to show yourself as Joined
-      event.invitedEmails.remove(FirebaseAuth.instance.currentUser?.email);
+      final emailLower = (FirebaseAuth.instance.currentUser?.email ?? '').trim().toLowerCase();
+      event.invitedEmails.removeWhere((e) => e.trim().toLowerCase() == emailLower);
       event.joinedUserIds.add(currentUid.value);
       fetchParticipants();
 
@@ -167,8 +170,9 @@ class EventDetailsController extends GetxController {
   // 2. The Database Logic
   Future<void> _sendInviteToFirestore(String email) async {
     try {
-      // 1. Check if the user is already invited
-      if (event.invitedEmails.contains(email)) {
+      // 1. Check if the user is already invited (case-insensitive)
+      final emailNorm = email.trim().toLowerCase();
+      if (event.invitedEmails.any((e) => e.trim().toLowerCase() == emailNorm)) {
         Get.snackbar("Notice", "$email is already invited.");
         return;
       }
@@ -194,12 +198,12 @@ class EventDetailsController extends GetxController {
         }
       }
 
-      // 3. If we passed both checks, it's safe to invite!
+      // 3. If we passed both checks, it's safe to invite! Store lowercase for consistent querying.
       await FirebaseFirestore.instance.collection('events').doc(event.id).update({
-        'invitedEmails': FieldValue.arrayUnion([email])
+        'invitedEmails': FieldValue.arrayUnion([emailNorm])
       });
 
-      event.invitedEmails.add(email);
+      event.invitedEmails.add(emailNorm);
 
       fetchParticipants();
 

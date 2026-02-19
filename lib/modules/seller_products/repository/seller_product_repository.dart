@@ -39,4 +39,25 @@ class SellerProductRepository {
             .map((doc) => ProductModel.fromJson(doc.data() as Map<String, dynamic>))
             .toList());
   }
+
+  /// Increment addedByCount when a product is added to a gift registry from the marketplace.
+  Future<void> incrementAddedByCount(String productId) async {
+    await _db.collection('products').doc(productId).update({
+      'addedByCount': FieldValue.increment(1),
+    });
+  }
+
+  /// Fetch a single product by its human-readable product code (for add-gift-from-marketplace).
+  Future<ProductModel?> getProductByCode(String code) async {
+    final trimmed = code.trim();
+    if (trimmed.isEmpty) return null;
+    final snapshot = await _db
+        .collection('products')
+        .where('productCode', isEqualTo: trimmed)
+        .limit(1)
+        .get();
+    if (snapshot.docs.isEmpty) return null;
+    final data = snapshot.docs.first.data();
+    return ProductModel.fromJson(data);
+  }
 }

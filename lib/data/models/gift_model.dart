@@ -9,6 +9,17 @@ class GiftModel {
   final String category;    // e.g., "Home", "Honeymoon", "Electronics"
   final bool isFullyFunded;
 
+  /// When gift is from marketplace: product document id.
+  final String productId;
+  /// Human-readable product code (e.g. GC-A1B2C3D4) for reference/search.
+  final String productCode;
+  /// Seller uid when gift is from marketplace.
+  final String sellerId;
+  /// Shop name when gift is from marketplace.
+  final String shopName;
+  /// Shop category when gift is from marketplace.
+  final String shopCategory;
+
   GiftModel({
     required this.id,
     required this.name,
@@ -17,7 +28,14 @@ class GiftModel {
     required this.imageUrl,
     this.category = "General",
     this.isFullyFunded = false,
+    this.productId = '',
+    this.productCode = '',
+    this.sellerId = '',
+    this.shopName = '',
+    this.shopCategory = '',
   });
+
+  bool get isFromMarketplace => productId.isNotEmpty;
 
   Map<String, dynamic> toJson() {
     return {
@@ -28,6 +46,11 @@ class GiftModel {
       'imageUrl': imageUrl,
       'category': category,
       'isFullyFunded': isFullyFunded,
+      'productId': productId,
+      'productCode': productCode,
+      'sellerId': sellerId,
+      'shopName': shopName,
+      'shopCategory': shopCategory,
     };
   }
 
@@ -40,6 +63,11 @@ class GiftModel {
       imageUrl: map['imageUrl'] ?? '',
       category: map['category'] ?? 'General',
       isFullyFunded: map['isFullyFunded'] ?? false,
+      productId: map['productId'] ?? '',
+      productCode: map['productCode'] ?? '',
+      sellerId: map['sellerId'] ?? '',
+      shopName: map['shopName'] ?? '',
+      shopCategory: map['shopCategory'] ?? '',
     );
   }
 }

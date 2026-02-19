@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:gift_collab/modules/my_events/controller/my_events_controller.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import '../../../routes/app_routes.dart';
+
 class EventHomeController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
@@ -14,6 +16,9 @@ class EventHomeController extends GetxController {
 
   Future<void> logout() async {
     try {
+
+      Get.offAllNamed(Routes().getLoginScreen());
+
       try {
         await _googleSignIn.disconnect();
       } catch (_) {
@@ -22,8 +27,7 @@ class EventHomeController extends GetxController {
 
       await _auth.signOut();
 
-      Get.delete<MyEventsController>(force: true);
-      Get.delete<EventHomeController>(force: true);
+
     } catch (e) {
       Get.snackbar("Error", "Logout failed: $e");
     }
